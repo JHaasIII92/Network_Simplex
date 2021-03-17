@@ -45,7 +45,6 @@ end
 
 
 
-
 """
 Function: 
 """
@@ -146,7 +145,7 @@ function findPath(i::Int64,j::Int64,n::Int64,B::SparseMatrixCSC{Int64,Int64})::A
 				pop!(path)
 				pop!(leadingNode)
 				reset = pop!(path)
-				println("Restock: $(reset)")
+				#println("Restock: $(reset)")
                 popedLeadingNode = pop!(leadingNode)
 				#println("Putting Back in Stack: $(reset[popedLeadingNode]) <= $(popedLeadingNode)")
 				visited[reset[popedLeadingNode]] = false
@@ -387,6 +386,19 @@ function updateBaseMatrix!(B_matrix,B_edgeList,exitingEdge,enteringEdge)
     B_matrix[enteringEdge[2],i] = -1
 end
 
+
+
+
+
+
+
+
+
+
+
+
+
+###### Delete
 
 """
 
