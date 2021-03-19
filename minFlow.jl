@@ -22,25 +22,24 @@ end
 
 """
 function Base_table(base_list, n)::SparseMatrixCSC{Int64,Int64}
-	B = spzeros(n*n,1)
+	base_table = spzeros(n*n,1)
 
 	for (i,e) in enumerate(base_list)
             if e[1] != e[2]
             pos = (e[1] - 1)*n + 1
-            while B[pos] != 0
+            while base_table[pos] != 0
                 pos += 1
             end
-            B[pos] = e[2]
+            base_table[pos] = e[2]
 
             pos = (e[2] - 1)*n + 1
-            while B[pos] != 0
+            while base_table[pos] != 0
                 pos += 1
             end
-            B[pos] = -e[1]
-
+            base_table[pos] = -e[1]
         end
     end
-    return B
+    return base_table
 end
 
 
@@ -50,32 +49,62 @@ Function:
 """
 function ArtificalBase_list(b::Array{Int64,1})::Array{Tuple{Int64,Int64},1}
     n = size(b,1)
-    basicEdge = Tuple{Int64,Int64}[]
+    artificalBase_list = Tuple{Int64,Int64}[]
     for i in 1:(n-1)
         if(sign(b[i]) == 1)
-        push!(basicEdge, (i,n))
+        push!(artificalBase_list, (i,n))
         else
-            push!(basicEdge, (n,i))
+            push!(artificalBase_list, (n,i))
         end
     end
-    push!(basicEdge, (n,n))
+    push!(artificalBase_list, (n,n))
+    return artificalBase_list
 end
+
 
 
 """
 Function:
 """
-function Base_list(Artifical, node)
-    k = size(Artifical,1)
-	n = k - 1
-    basicEdge = Tuple{Int64,Int64}[]
-    for i in 1:n
-        if( (Artifical[i] != (node, k)) && (Artifical[i] != (k, node)) )
-			push!(basicEdge, Artifical[i])
+function Base_list(artificalBase_list::Array{Tuple{Int64,Int64},1})::Array{Tuple{Int64,Int64},1}
+    base_list = Tuple{Int64,Int64}[]
+    for (i,e) in enumerate(artificalBase_list)
+        if(e != (n,n))
+            if(n in e)
+                (e[1] != n) ? push!(base_list, (e[1],e[1])) : push!(base_list, (e[2],e[2]))
+            else
+                push!(base_list, e)
+            end
         end
     end
-    push!(basicEdge, (n,n))
-	return basicEdge
+    return base_list
+end
+
+"""
+Function:
+"""
+function Set_cost(base_list, cost_dict)
+        cost = zeros(size(base_list,1),1)
+        for (i,e) in enumerate(base_list)
+            if e[1]!=e[2]
+                cost[i] = cost_dict[e]
+            end
+        end
+    end
+    return cost
+end
+
+"""
+Function:
+"""
+function NonBasic_list(base_list, edge_list)
+    nonBasic_list = Tuple{Int64,Int64}[]
+        for e in edge_list
+            if ((e in base_list) == false)
+                push!(nonBasic_list, e)
+        end
+    end
+    return nonBasic_list
 end
 
 
