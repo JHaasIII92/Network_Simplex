@@ -90,7 +90,6 @@ function Set_cost(base_list, cost_dict)
                 cost[i] = cost_dict[e]
             end
         end
-    end
     return cost
 end
 
