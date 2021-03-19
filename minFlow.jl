@@ -23,7 +23,7 @@ end
 """
 function Base_table(base_list, n)::SparseMatrixCSC{Int64,Int64}
 	B = spzeros(n*n,1)
-	
+
 	for (i,e) in enumerate(base_list)
             if e[1] != e[2]
             pos = (e[1] - 1)*n + 1
@@ -45,9 +45,8 @@ end
 
 
 
-
 """
-Function: 
+Function:
 """
 function ArtificalBase_list(b::Array{Int64,1})::Array{Tuple{Int64,Int64},1}
     n = size(b,1)
@@ -64,7 +63,7 @@ end
 
 
 """
-Function: 
+Function:
 """
 function Base_list(Artifical, node)
     k = size(Artifical,1)
@@ -85,12 +84,12 @@ Function: findPath
 Find a path from node i to node j if B is a ArtificalBase_table
 """
 function findPath(i::Int64,j::Int64,n::Int64,B::SparseMatrixCSC{Int64,Int64})::Array{Tuple{Int64,Int64}}
-    
+
 	stack = Int[]
 	path = Tuple{Int64,Int64}[]
     leadingNode = Int[]
 	visited = Bool[false for i in 1:n]
-    
+
     prev = j
 	push!(stack,-i)
 	found = false
@@ -99,9 +98,9 @@ function findPath(i::Int64,j::Int64,n::Int64,B::SparseMatrixCSC{Int64,Int64})::A
 		node = pop!(stack)
 		abs_node = abs(node)
 		#println("Current Node: $(abs_node)")
-		if visited[abs_node] == false 
+		if visited[abs_node] == false
 			visited[abs_node] = true
-            
+
 			if sign(node) == -1
 				#println("Adding leading node 1: ($(abs_node), $(prev))")
 				push!(path,(abs_node,prev))
@@ -111,14 +110,14 @@ function findPath(i::Int64,j::Int64,n::Int64,B::SparseMatrixCSC{Int64,Int64})::A
                 push!(path,(prev,abs_node))
                 push!(leadingNode,2)
             end
-			
+
 			prev = abs_node
-            
+
 			pushed = 0
 			pos = (abs_node - 1)*n + 1
 			neighbor = B[pos]
 			while (neighbor != 0)&&(found==false)
-                
+
 				if abs(neighbor) == j
 					found = true
 					pushed += 1
@@ -134,19 +133,19 @@ function findPath(i::Int64,j::Int64,n::Int64,B::SparseMatrixCSC{Int64,Int64})::A
 						push!(stack,neighbor)
 						pushed += 1
 					end
-				
+
 					pos += 1
 					neighbor = B[pos]  # Incrementing what neighbor we are looking at
 				end
 			end
-			
+
 			if(pushed == 0)  # check for dead end
 				#println("$(abs_node): Dead End")
 				#println("Bad Path: $(path)")
 				pop!(path)
 				pop!(leadingNode)
 				reset = pop!(path)
-				println("Restock: $(reset)")
+				#println("Restock: $(reset)")
                 popedLeadingNode = pop!(leadingNode)
 				#println("Putting Back in Stack: $(reset[popedLeadingNode]) <= $(popedLeadingNode)")
 				visited[reset[popedLeadingNode]] = false
@@ -154,12 +153,12 @@ function findPath(i::Int64,j::Int64,n::Int64,B::SparseMatrixCSC{Int64,Int64})::A
 				#println((popedLeadingNode == 1) ? 2 : 1)
 				prev = reset[(popedLeadingNode == 1) ? 2 : 1]
 			end
-			
+
 		end
 	end
-	
+
 	return path
-	
+
 end
 
 """
@@ -206,7 +205,7 @@ function getFlow(path,n)
 	else
 		range = (size(path, 1):(-1):2)
 	end
-	
+
 	i=2; j=1
 	for k in range
 		if ( (prev[i] != path[k][j]) && (withFlow == true))
@@ -263,7 +262,7 @@ function getIndexes(path,B_edgeList)
             end
         end
     end
-    return indexes 
+    return indexes
 end
 
 """
@@ -283,7 +282,7 @@ function getDeleta(flow, path, indexes, x)
 	else
 		range = (size(path, 1):(-1):2)
 	end
-	
+
     for i in range
 		#println("Flow on $(path[i]): $(x[i-1])")
         if (flow[i] == -1)
@@ -291,7 +290,7 @@ function getDeleta(flow, path, indexes, x)
             if x[k] < delta
                 delta = x[k]
                 min_edge = path[i]
-                min_index = k 
+                min_index = k
             end
         end
     end
@@ -304,7 +303,7 @@ end
 """
 function updateFlowPattern!(flow, path, indexes, min_index, delta, x)
     # First update the incomming edged spot in outgoing spot
-    x[min_index] = delta	
+    x[min_index] = delta
     for i in 2:size(flow,1)
 		k = indexes[i-1]
         if k != min_index
@@ -315,7 +314,7 @@ function updateFlowPattern!(flow, path, indexes, min_index, delta, x)
 				#println("$(temp_x) ---> $(x[i])")
 			else
 				temp_x = x[k]
-				x[k] -= delta 
+				x[k] -= delta
 				#println("$(temp_x) ---> $(x[i])")
 			end
         end
@@ -334,9 +333,9 @@ function RemoveFromTable!(i,j,n,B)
 		if abs(B[pos]) ==j
 			#println("Found abs(B[pos]) at pos: $(pos)")
 			break
-		end	
+		end
 		pos += 1
-    end 
+    end
     B[pos] = 0
 	#println(B)
     keep_pos = pos + 1
@@ -346,7 +345,7 @@ function RemoveFromTable!(i,j,n,B)
 		B[keep_pos] = 0
         keep_pos +=1
     end
-	
+
     if(size(tempStack,1) > 0)
         for k in 1:size(tempStack,1)
 			#println("Placing $(tempStack[k]) back on table at pos: $(pos)")
@@ -363,12 +362,12 @@ end
 """
 function AddToTable!(u, v,node_sign,B)
 	pos = (u - 1)*n + 1
-	while(B[pos] != 0) 
-		pos += 1 
+	while(B[pos] != 0)
+		pos += 1
 	end
 	B[pos] = node_sign*v
 end
-	
+
 
 """
 # find the exiting edge in the list
@@ -385,74 +384,4 @@ function updateBaseMatrix!(B_matrix,B_edgeList,exitingEdge,enteringEdge)
 
     B_matrix[enteringEdge[1],i] = 1
     B_matrix[enteringEdge[2],i] = -1
-end
-
-
-"""
-
-
-"""
-function convetArtifical_x(phase_1, phase_2, x)
-	new_x = zeros(n,1)
-	for i in 1:n
-		for j in 1:n
-			if phase_2[i] == phase_1[j]
-				new_x[i] = x[j]
-			end
-		end
-	end
-	return new_x
-end
-
-"""
-
-"""
-function setCost(list, C)
-    n = size(list,1)
-    c = zeros(n)
-    for k in 1:n
-        i = list[k][1]
-        j = list[k][2]
-        c[i] = C[i, j]
-    end
-    return c
-end
-
-"""
-
-
-"""
-
-function nonBasicList(E, phase2)
-	NB_edgeList = []
-	for i in E
-		if (i in phase2 ) == false
-			push!(NB_edgeList, i)
-		end
-	end
-	return NB_edgeList
-end
-
-
-"""
-
-
-"""
-function checkPhase1(B,n)
-	
-	k = (n - 1)*n + 1
-	remainding = 0
-	remainder = 0
-	for i in 1:n
-		if B[k] != 0
-			if remainding == 0
-				remainder = abs(B[k])
-			end
-			remainding += 1
-			k += 1
-		else
-			break
-		end
-	end
-	return remainder, remainding
 end
