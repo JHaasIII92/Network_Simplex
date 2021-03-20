@@ -140,6 +140,7 @@ function Find_path(i::Int64,j::Int64,n::Int64,artificalBase_table::SparseMatrixC
 	found = false
 	while found == false
 		#println("The Stack: $(stack)")
+        #println("Visited Nodes: $(visited)")
 		node = pop!(stack)
 		abs_node = abs(node)
 		#println("Current Node: $(abs_node)")
@@ -185,10 +186,11 @@ function Find_path(i::Int64,j::Int64,n::Int64,artificalBase_table::SparseMatrixC
 				pop!(leadingNode)
 				reset = pop!(path)
 				#println("Restock: $(reset)")
+                #println("Leading Node: $leadingNode")
                 popedLeadingNode = pop!(leadingNode)
 				#println("Putting Back in Stack: $(reset[popedLeadingNode]) <= $(popedLeadingNode)")
 				visited[reset[popedLeadingNode]] = false
-				push!(stack,reset[popedLeadingNode])
+                (popedLeadingNode == 1) ? push!(stack,-reset[popedLeadingNode]) : push!(stack,reset[popedLeadingNode])
 				#println((popedLeadingNode == 1) ? 2 : 1)
 				prev = reset[(popedLeadingNode == 1) ? 2 : 1]
 			end
