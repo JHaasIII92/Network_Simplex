@@ -222,10 +222,10 @@ Return: None
 """
 function Update_BaseMatrix!(B_matrix::SparseMatrixCSC{Int64,Int64},edge_list::Matrix{Tuple{Int64, Int64}},exitingEdge::Tuple{Int64, Int64},enteringEdge::Tuple{Int64, Int64})
     i = 1
-    while B_edgeList[i] != exitingEdge
+    while edge_list[i] != exitingEdge
         i += 1
     end
-    B_edgeList[i] = enteringEdge
+    edge_list[i] = enteringEdge
     B_matrix[exitingEdge[1],i] = 0
     B_matrix[exitingEdge[2],i] = 0
 
