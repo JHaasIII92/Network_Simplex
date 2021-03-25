@@ -310,7 +310,7 @@ function ReducedCost(w, nonBasic_list, phase, cost)
         if e != (0,0)                               #(0,0) for deleted nb_edges
             (phase == 1) ? c = 0 : c = cost[e]
             rij = w[e[1]] - w[e[2]] - c
-			#println("$(e): $(rij) =  $(w[e[1]] - w[e[2]] - c)")
+			println("$(e): $(rij) =  $(w[e[1]] - w[e[2]] - c)")
             if(rij > max)
                 max = rij
                 newBasicEdge = e
