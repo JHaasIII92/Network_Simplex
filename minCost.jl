@@ -6,9 +6,9 @@ Argument: b: a vector of node supply and demand
 Return: artificalBase_table: an inital look up table for the
     artifical base in phase 1.
 """
-function ArtificalBase_table(b::Array{Int64,1})::SparseMatrixCSC{Int64,Int64}
+function ArtificalBase_table(b)
     n = size(b,1)
-    artificalBase_table = spzeros(n*n,1)
+    artificalBase_table = spzeros(Int,n*n,1)
     for i in 0:(n-1)
         artificalBase_table[i*n + 1] = sign(b[i+1])*n
     end
@@ -24,8 +24,8 @@ Argument: base_list: 2 Tuple list of edges in the base.
     n: number of nodes in the network
 Return: base_table: an inital look up table for the base in phase 2.
 """
-function Base_table(base_list, n::Int64)::SparseMatrixCSC{Int64,Int64}
-	base_table = spzeros(n*n,1)
+function Base_table(base_list, n)
+	base_table = spzeros(Int,((n)*(n)),1)
 	for (i,e) in enumerate(base_list)
             if e[1] != e[2]
             pos = (e[1] - 1)*n + 1
@@ -50,7 +50,7 @@ Argument: base_list: 2 Tuple list of edges in the base.
 Return: artificalBase_list: an inital list of 2 Tuples for the artifical base
     in phase 1.
 """
-function ArtificalBase_list(b::Array{Int64,1})::Matrix{Tuple{Int64, Int64}}
+function ArtificalBase_list(b)
     n = size(b,1)
     artificalBase_list = Array{Tuple{Int64,Int64},2}(undef, n, 1)
     for i in 1:(n-1)
@@ -71,7 +71,7 @@ Argument: artificalBase_list: an inital look up table for the
     n: number of nodes in network.
 Return: base_list: an inital list of 2 Tuples for the base in phase 2.
 """
-function Base_list(artificalBase_list::Matrix{Tuple{Int64, Int64}}, n::Int64)::Matrix{Tuple{Int64, Int64}}
+function Base_list(artificalBase_list, n)
     base_list = Array{Tuple{Int64,Int64},2}(undef, n, 1)
     for (i,e) in enumerate(artificalBase_list)
         if(e != (n+1,n+1))
@@ -91,7 +91,7 @@ Argument: base_list: an inital list of 2 Tuples for the base in phase 2.
     cost_dict: dictionary of edge costs
 Return: cost: an ordered vector of cost for edges for the inital base in phase 2.
 """
-function Set_cost(base_list::Matrix{Tuple{Int64, Int64}}, cost_dict::Dict{Tuple{Int64, Int64}, Int64})::Matrix{Float64}
+function Set_cost(base_list, cost_dict)
         cost = zeros(size(base_list,1),1)
         for (i,e) in enumerate(base_list)
             if e[1]!=e[2]
@@ -107,15 +107,12 @@ Argument: base_list: 2 Tuple list of edges in the base.
     edge_list: 2 Tuple list of edges in network
 Return: nonBasic_list:  Tuple list of edges not in the base.
 """
-function NonBasic_list(base_list::Matrix{Tuple{Int64, Int64}}, edge_list::Matrix{Tuple{Int64, Int64}})::Matrix{Tuple{Int64, Int64}}
-    n = (size(edge_list,2) - size(base_list,1)) + 1             # figure out size of nb_list the + 1 is for the root edge not being counted
-    nonBasic_list = Array{Tuple{Int64,Int64},2}(undef, n, 1)
-    pos = 1
+function NonBasic_list(base_list, edge_list, n)
+    nonBasic_list = []
         for e in edge_list
-            if (((e in base_list) == false)&(e[1]!=e[2]))
-                println(e)
-                nonBasic_list[pos] = e
-                pos += 1
+            if (((e in base_list) == false)&(e[1]!=e[2])&(n+1 in e) == false)
+
+                push!(nonBasic_list, e)
         end
     end
     return nonBasic_list
@@ -130,7 +127,7 @@ Argument: i, j: two nodes to find a path to
 Return: path: a 2 Tuple list of edges in path with the
     first entry being the (i,j)
 """
-function Find_path(i::Int64,j::Int64,n::Int64,artificalBase_table::SparseMatrixCSC{Int64,Int64})::Array{Tuple{Int64,Int64}}
+function Find_path(i,j,n,artificalBase_table)
 	stack = Int[]
 	path = Tuple{Int64,Int64}[]
     leadingNode = Int[]
@@ -175,6 +172,7 @@ function Find_path(i::Int64,j::Int64,n::Int64,artificalBase_table::SparseMatrixC
 						push!(stack,neighbor)
 						pushed += 1
 					end
+
 					pos += 1
 					neighbor = artificalBase_table[pos]  # Incrementing what neighbor we are looking at
 				end
@@ -205,7 +203,7 @@ Argument: edge_list: 2 Tuple list of edges for either phase 1 or phase 2.
     n: number of nodes in the network
 Return: B_matrix: sparse adjacency matrix
 """
-function BaseMatrix(edge_list::Matrix{Tuple{Int64, Int64}},n::Int64)::SparseMatrixCSC{Int64,Int64}
+function BaseMatrix(edge_list,n)
 	B_matrix = spzeros(n,n)
 	for (k,e) in enumerate(edge_list)
 		B_matrix[e[1],k] = 1
@@ -220,7 +218,7 @@ Argument: B_matrix: sparse adjacency matrix. edge_list: 2 Tuple list of edges fo
     exitingEdge, enteringEdge: 2 Tuple of the edge exiting/entering
 Return: None
 """
-function Update_BaseMatrix!(B_matrix::SparseMatrixCSC{Int64,Int64},edge_list::Matrix{Tuple{Int64, Int64}},exitingEdge::Tuple{Int64, Int64},enteringEdge::Tuple{Int64, Int64})
+function Update_BaseMatrix!(B_matrix,edge_list,exitingEdge,enteringEdge)
     i = 1
     while edge_list[i] != exitingEdge
         i += 1
@@ -240,7 +238,7 @@ Argument: path: a 2 Tuple list of edges in path with the
 Return: forward: this bool is to determin if the path gose around
  the cycle forwrds or backwards
 """
-function Get_direction(path::Array{Tuple{Int64,Int64}})::Bool
+function Get_direction(path)
 	if (path[1][2]==path[2][2])||(path[1][2]==path[2][1])
 		forward = true
 	else
@@ -258,7 +256,7 @@ Return: flow_list: a list with +1 if the edge is in the same direction
     of the new edge -1 otherwise.
     valid: if flow list has all +1 then the algorithm can not proceed
 """
-function Get_flow(path::Array{Tuple{Int64,Int64}})
+function Get_flow(path)
 	valid = false;
 	prev = path[1]
 	withFlow = true
@@ -310,7 +308,7 @@ function ReducedCost(w, nonBasic_list, phase, cost)
         if e != (0,0)                               #(0,0) for deleted nb_edges
             (phase == 1) ? c = 0 : c = cost[e]
             rij = w[e[1]] - w[e[2]] - c
-			println("$(e): $(rij) =  $(w[e[1]] - w[e[2]] - c)")
+			#println("$(e): $(rij) =  $(w[e[1]] - w[e[2]] - c)")
             if(rij > max)
                 max = rij
                 newBasicEdge = e
@@ -436,7 +434,7 @@ Function:
 Argument:
 Return:
 """
-function AddToTable!(u, v,node_sign,B)
+function AddToTable!(u, v,node_sign,B, n)
 	pos = (u - 1)*n + 1
 	while(B[pos] != 0)
 		pos += 1
